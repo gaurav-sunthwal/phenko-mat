@@ -3,7 +3,6 @@
 import { FirebaseError } from "firebase/app";
 import {
   GoogleAuthProvider,
-  OAuthProvider,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -22,7 +21,7 @@ import { safeNext } from "@/lib/format";
 
 type Mode = "signin" | "signup";
 
-/** Set just before leaving for Google/Apple, so the login page knows to finish a sign-in when it comes back. */
+/** Set just before leaving for Google, so the login page knows to finish a sign-in when it comes back. */
 const REDIRECT_PENDING = "phenko:auth-redirect";
 
 const FIREBASE_MESSAGES: Record<string, string> = {
@@ -78,7 +77,7 @@ export function LoginForm() {
     await new Promise(() => undefined);
   }
 
-  // Back from Google/Apple: finish the sign-in that `socialSignIn` started.
+  // Back from Google: finish the sign-in that `socialSignIn` started.
   useEffect(() => {
     let pending = false;
     try {
@@ -145,18 +144,12 @@ export function LoginForm() {
     });
   };
 
-  const socialSignIn = (provider: "google" | "apple") =>
+  // Apple sign-in is off on the web for now (it needs a Services ID + return URL set up with Apple first).
+  const googleSignIn = () =>
     run(async () => {
       const auth = await clientAuth();
-      let p: GoogleAuthProvider | OAuthProvider;
-      if (provider === "google") {
-        p = new GoogleAuthProvider();
-        p.setCustomParameters({ prompt: "select_account" });
-      } else {
-        p = new OAuthProvider("apple.com");
-        p.addScope("email");
-        p.addScope("name");
-      }
+      const p = new GoogleAuthProvider();
+      p.setCustomParameters({ prompt: "select_account" });
       // A full-page redirect, not a popup (popups get blocked, and break on phones and in in-app browsers).
       // The page comes back to this URL and the effect above finishes the sign-in.
       try {
@@ -199,17 +192,7 @@ export function LoginForm() {
     <div className="space-y-5">
       <div className="space-y-3">
         <button
-          onClick={() => socialSignIn("apple")}
-          disabled={busy}
-          className="flex w-full items-center justify-center gap-3 rounded-full bg-ink px-5 py-3.5 font-bold text-white transition hover:bg-black disabled:opacity-60"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M16.37 12.9c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.44-2.51-1.64-3.05-1.66-1.3-.13-2.54.77-3.2.77-.66 0-1.68-.75-2.76-.73-1.42.02-2.73.83-3.46 2.1-1.48 2.56-.38 6.35 1.06 8.43.7 1.02 1.54 2.16 2.63 2.12 1.06-.04 1.46-.68 2.73-.68 1.28 0 1.64.68 2.76.66 1.14-.02 1.86-1.04 2.55-2.06.81-1.18 1.14-2.32 1.16-2.38-.03-.01-2.21-.85-2.22-3.4ZM14.3 6.73c.58-.7.97-1.68.86-2.65-.84.03-1.85.56-2.45 1.26-.54.62-1.01 1.62-.88 2.57.93.07 1.88-.47 2.47-1.18Z" />
-          </svg>
-          Continue with Apple
-        </button>
-        <button
-          onClick={() => socialSignIn("google")}
+          onClick={googleSignIn}
           disabled={busy}
           className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-ink bg-white px-5 py-3 font-bold transition hover:bg-cream disabled:opacity-60"
         >
