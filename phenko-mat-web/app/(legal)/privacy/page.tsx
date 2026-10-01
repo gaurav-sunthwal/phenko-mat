@@ -40,14 +40,16 @@ export default function PrivacyPage() {
           <strong>App usage analytics:</strong> in the app and on our website we use Microsoft Clarity to understand how screens are
           used (taps, scrolls and screen recordings with personal content such as chats, names and listings masked), so
           we can fix confusing parts
-          and bugs. It&apos;s linked to an internal account number, never your name or email.
+          and bugs. It&apos;s linked to an internal account number, never your name or email. On the website we also
+          use Google Analytics and Vercel Analytics to count visits and see which pages are used (pages viewed, device
+          and approximate location); these aren&apos;t linked to your account.
         </li>
       </ul>
       <p>We don&apos;t sell your data or show ads, and we don&apos;t use third-party advertising trackers.</p>
       <h2>Who processes it</h2>
       <p>
         We use trusted providers to run the service: Google Firebase (sign-in), Neon (database), Cloudflare R2 (photo
-        storage), Microsoft Clarity (app usage analytics) and our hosting provider. They process data only on our behalf. Data may be stored outside India.
+        storage), Microsoft Clarity, Google Analytics and Vercel Analytics (usage analytics) and our hosting provider. They process data only on our behalf. Data may be stored outside India.
       </p>
       <h2>How long we keep it</h2>
       <ul>
