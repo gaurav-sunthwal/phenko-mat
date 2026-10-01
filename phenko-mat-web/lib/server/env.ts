@@ -68,7 +68,7 @@ const placesSchema = z.object({
 });
 
 const appSchema = z.object({
-  /** Canonical origin, e.g. https://phenkomat.app. Used for CSRF origin checks. */
+  /** Canonical origin, e.g. https://phenko-mat.vercel.app. Used for CSRF origin checks. */
   APP_ORIGIN: z.url().optional(),
 });
 

@@ -8,7 +8,7 @@ import { SITE } from "./site";
  * doesn't match the page).
  */
 
-/** Canonical origin, e.g. https://phenkomat.app. Set APP_ORIGIN in production or canonicals point at localhost. */
+/** Canonical origin, e.g. https://phenko-mat.vercel.app. Set APP_ORIGIN in production or canonicals point at localhost. */
 export const SITE_URL = (process.env.APP_ORIGIN ?? "http://localhost:3000").replace(/\/$/, "");
 
 export const absoluteUrl = (path = "/") => `${SITE_URL}${path}`;

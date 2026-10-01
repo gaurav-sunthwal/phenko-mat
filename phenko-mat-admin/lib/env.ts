@@ -29,7 +29,7 @@ const schema = z
     R2_ACCESS_KEY_ID: z.string().min(1),
     R2_SECRET_ACCESS_KEY: z.string().min(1),
     R2_BUCKET: z.string().min(1),
-    /** Base URL of the web app/API, for the Health page's live checks (e.g. https://phenkomat.app). */
+    /** Base URL of the web app/API, for the Health page's live checks (e.g. https://phenko-mat.vercel.app). */
     WEB_APP_URL: z.url().default("http://localhost:3000"),
   })
   .refine((e) => Boolean(e.FIREBASE_CLIENT_EMAIL) === Boolean(e.FIREBASE_PRIVATE_KEY), {
