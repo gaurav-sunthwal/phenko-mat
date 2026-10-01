@@ -8,3 +8,5 @@
 *-firebase-adminsdk-*.json
 phenko-mat-*-[0-9a-f]*.json
 node_modules/
+.vercel
+.env*

@@ -1,0 +1,12 @@
+# The Vercel CLI uploads from the repo root (each project picks its folder via Root Directory).
+# The Expo app is never deployed to Vercel — and its generated ios/ folder alone is 10k+ files.
+/phenko-mat
+
+# Generated / local-only, in any project.
+node_modules
+.next
+.expo
+.env
+.env*.local
+.demo-logins.local
+*.tsbuildinfo
