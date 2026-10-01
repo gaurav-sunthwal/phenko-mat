@@ -37,8 +37,9 @@ export default function PrivacyPage() {
           secure and working.
         </li>
         <li>
-          <strong>App usage analytics:</strong> in the mobile app we use Microsoft Clarity to understand how screens are
-          used (taps, scrolls and screen recordings with text and personal content masked), so we can fix confusing parts
+          <strong>App usage analytics:</strong> in the app and on our website we use Microsoft Clarity to understand how screens are
+          used (taps, scrolls and screen recordings with personal content such as chats, names and listings masked), so
+          we can fix confusing parts
           and bugs. It&apos;s linked to an internal account number, never your name or email.
         </li>
       </ul>

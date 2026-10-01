@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClarityIdentify, ClarityMask } from "@/components/Clarity";
 import { GiveSheet } from "@/components/GiveSheet";
 import { MatchModal } from "@/components/MatchModal";
 import { PhoneFrame } from "@/components/AppShell";
@@ -11,13 +12,17 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
-    <PhoneFrame>
-      {children}
-      <MatchModal />
-      <GiveSheet />
-      <Toast />
-      <WelcomeOnFirstRun />
-      <RealtimeProvider />
-    </PhoneFrame>
+    // Personal content (chats, names, listings) is masked in session recordings.
+    <ClarityMask>
+      <PhoneFrame>
+        {children}
+        <MatchModal />
+        <GiveSheet />
+        <Toast />
+        <WelcomeOnFirstRun />
+        <RealtimeProvider />
+        <ClarityIdentify />
+      </PhoneFrame>
+    </ClarityMask>
   );
 }

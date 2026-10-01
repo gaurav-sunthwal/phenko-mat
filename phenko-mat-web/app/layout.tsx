@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { ClarityScript } from "@/components/Clarity";
 import { ErrorReporter } from "@/components/ErrorReporter";
 import { SEO, SITE_URL } from "@/lib/seo";
 import { SITE } from "@/lib/site";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full font-sans">
         {children}
         <ErrorReporter />
+        <ClarityScript />
       </body>
     </html>
   );
