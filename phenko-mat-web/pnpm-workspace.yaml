@@ -4,3 +4,8 @@ allowBuilds:
   protobufjs: false
   sharp: false
   unrs-resolver: false
+overrides:
+  # firebase-admin → jwks-rsa (CommonJS) does require('jose'). jose 6 is ESM-only, which needs
+  # require(esm) — off in Vercel's function runtime, so sign-in crashed with ERR_REQUIRE_ESM.
+  # jose 5 ships a CommonJS build with the same four functions jwks-rsa uses.
+  jwks-rsa>jose: ^5.10.0
