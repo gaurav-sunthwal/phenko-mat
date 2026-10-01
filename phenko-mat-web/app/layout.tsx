@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
   appleWebApp: { title: SITE.name, statusBarStyle: "default" },
   formatDetection: { telephone: false },
+  verification: { google: "4S-SnEkKgabU7Yr4avzDYY7XrbS0BRFh9hpZA8P6uLk" },
 };
 
 export const viewport: Viewport = {
