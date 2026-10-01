@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
-import type { ChatMessage, ConnectionSummary, SwipeResult } from "@/lib/dto";
+import type { ChatMessage, ConnectionSummary, SwipeResult, SwipeSummary } from "@/lib/dto";
 import type { WireMessage } from "@/lib/realtime/protocol";
 import { badRequest, gone, notFound } from "../errors";
 import { isBlockedBetween } from "./safety";
@@ -196,6 +196,29 @@ export async function resetPasses(userId: string, categoryId?: string) {
     where s.user_id = ${userId} and s.direction = 'left'
     ${categoryId ? sql`and exists (select 1 from item_categories ic where ic.item_id = s.item_id and ic.category_id = ${categoryId})` : sql``}
   `);
+}
+
+/**
+ * Counts the user's swipes on items that are still listed, with the deck's filters, so an empty deck can say
+ * why it's empty: passed items ("show them again" brings them back) vs. everything already said yes to.
+ */
+export async function swipeSummary(
+  userId: string,
+  opts: { categoryId?: string; freeOnly?: boolean },
+): Promise<SwipeSummary> {
+  const result = await getDb().execute<{ passed: number; wanted: number }>(sql`
+    select count(*) filter (where s.direction = 'left')::int as passed,
+           count(*) filter (where s.direction = 'right')::int as wanted
+    from swipes s
+    join items i on i.id = s.item_id
+    where s.user_id = ${userId}
+      and i.status = 'active'
+      and i.owner_id <> ${userId}
+      ${opts.freeOnly ? sql`and i.price_inr = 0` : sql``}
+      ${opts.categoryId ? sql`and exists (select 1 from item_categories ic where ic.item_id = i.id and ic.category_id = ${opts.categoryId})` : sql``}
+  `);
+  const row = result.rows[0];
+  return { passed: Number(row?.passed ?? 0), wanted: Number(row?.wanted ?? 0) };
 }
 
 /** Undo one pass (a mis-swipe). Only ever removes a "left" swipe; right swipes are connections. */

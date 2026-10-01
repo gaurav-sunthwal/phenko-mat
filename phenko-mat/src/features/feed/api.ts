@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { api, qs } from "@/lib/api/client";
 import { qk } from "@/lib/query/keys";
-import type { FeedItem, SwipeResult } from "@/shared/dto";
+import type { FeedItem, SwipeResult, SwipeSummary } from "@/shared/dto";
 import type { FeedScope } from "@/stores/ui";
 
 /** Pass `scope: null` to wait (e.g. until we know whether the user has a location). */
@@ -16,6 +16,16 @@ export const useFeed = (categoryId: string | undefined, scope: FeedScope | null,
     refetchOnWindowFocus: false,
     staleTime: 60_000,
     retry: false,
+  });
+
+/** For an empty deck: how many still-listed items were passed vs. wanted (same filters as the feed). */
+export const useSwipeSummary = (categoryId: string | undefined, freeOnly: boolean, enabled: boolean) =>
+  useQuery({
+    queryKey: qk.feed.summary(categoryId, freeOnly),
+    queryFn: ({ signal }) =>
+      api.get<SwipeSummary>(`/api/swipes${qs({ category: categoryId, free: freeOnly ? "1" : undefined })}`, signal),
+    enabled,
+    staleTime: 0,
   });
 
 export function useSwipeActions() {

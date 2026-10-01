@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { useSWRConfig } from "swr";
-import { ApiRequestError, api } from "@/lib/client/api";
+import Link from "next/link";
+import useSWR, { useSWRConfig } from "swr";
+import { ApiRequestError, api, fetcher } from "@/lib/client/api";
 import { useCategories, useFeed, useMe } from "@/lib/client/hooks";
 import { useUi, type FeedScope } from "@/lib/client/stores/ui";
 import { trackSeen } from "@/lib/client/views";
 import type { ReportTarget } from "@/lib/client/safety";
-import type { FeedItem, SwipeResult } from "@/lib/dto";
+import type { FeedItem, SwipeResult, SwipeSummary } from "@/lib/dto";
 import { HeartIcon, PinIcon, RefreshIcon, UndoIcon, XIcon } from "./icons";
 import { LocationForm } from "./LocationSetup";
 import { ReportSheet } from "./ReportSheet";
@@ -62,6 +63,18 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
     return [...restored, ...(data ?? []).filter((i) => !back.has(i.id))].filter((i) => !swiped[i.id]);
   }, [data, restored, swiped]);
   const top = deck[0];
+
+  // Only when "Everywhere" runs dry: why it's empty, so we never offer "show passed items" with none to show.
+  const summaryKey = (() => {
+    if (top || scope !== "all" || query || !data) return null;
+    const qs = new URLSearchParams();
+    if (categoryId) qs.set("category", categoryId);
+    if (freeOnly) qs.set("free", "1");
+    return `/api/swipes${qs.size ? `?${qs}` : ""}`;
+  })();
+  const { data: summary, mutate: refreshSummary } = useSWR<SwipeSummary>(summaryKey, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   // The card on top counts as "seen" for the owner's Insights.
   const topId = top?.id;
@@ -211,6 +224,7 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
       clearSwiped();
       // Passed items come back in every deck, not just this one.
       await globalMutate((key) => typeof key === "string" && key.startsWith("/api/feed"));
+      void refreshSummary();
     } catch (e) {
       setSwipeError(e instanceof ApiRequestError ? e.message : "Couldn't bring passed items back. Try again.");
     } finally {
@@ -263,26 +277,13 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
           }
         />
       ) : (
-        <EmptyState
-          emoji="🐝"
-          title="You've seen it all"
-          body="You've swiped through everything for now. Check back soon, or give the ones you passed on another look."
-          action={
-            <div className="flex flex-col items-center">
-              <button
-                onClick={resetPasses}
-                disabled={resetting}
-                className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-bold text-white disabled:opacity-60"
-              >
-                <RefreshIcon size={18} /> {resetting ? "Loading…" : "Show passed items again"}
-              </button>
-              {swipeError && (
-                <p className="mt-3 text-sm font-medium text-[#B42318]" role="alert">
-                  {swipeError}
-                </p>
-              )}
-            </div>
-          }
+        <ExhaustedDeck
+          summary={summary}
+          freeOnly={freeOnly}
+          inCategory={Boolean(categoryId)}
+          resetting={resetting}
+          onReset={resetPasses}
+          error={swipeError}
         />
       );
   } else {
@@ -452,5 +453,80 @@ function DeckSkeleton() {
       </div>
       <div className="mt-3 h-4" />
     </div>
+  );
+}
+
+/** "Everywhere" has nothing left: say why, and only offer what will actually bring cards back. */
+function ExhaustedDeck({
+  summary,
+  freeOnly,
+  inCategory,
+  resetting,
+  onReset,
+  error,
+}: {
+  summary: SwipeSummary | undefined;
+  freeOnly: boolean;
+  inCategory: boolean;
+  resetting: boolean;
+  onReset: () => void;
+  error: string | null;
+}) {
+  const where = inCategory ? "in this category" : "right now";
+  const errorNote = error && (
+    <p className="mt-3 text-sm font-medium text-[#B42318]" role="alert">
+      {error}
+    </p>
+  );
+
+  if (summary && summary.passed > 0) {
+    const n = summary.passed;
+    return (
+      <EmptyState
+        emoji="🐝"
+        title="You've seen it all"
+        body={`You've swiped through everything ${where}. You passed on ${n} ${n === 1 ? "item" : "items"} — give ${n === 1 ? "it" : "them"} another look?`}
+        action={
+          <div className="flex flex-col items-center">
+            <button
+              onClick={onReset}
+              disabled={resetting}
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-bold text-white disabled:opacity-60"
+            >
+              <RefreshIcon size={18} /> {resetting ? "Loading…" : `Show ${n} passed ${n === 1 ? "item" : "items"} again`}
+            </button>
+            {errorNote}
+          </div>
+        }
+      />
+    );
+  }
+
+  if (summary && summary.wanted > 0) {
+    return (
+      <EmptyState
+        emoji="💛"
+        title="You've said yes to everything"
+        body={`You swiped right on every ${freeOnly ? "free " : ""}listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
+        action={
+          <Link href="/chats" className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-bold text-white">
+            Go to your chats
+          </Link>
+        }
+      />
+    );
+  }
+
+  return (
+    <EmptyState
+      emoji="🐝"
+      title="You've seen it all"
+      body={
+        freeOnly
+          ? "Nothing free to swipe on right now. Turn off “Free only” to see everything, or check back soon."
+          : "There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
+      }
+      action={errorNote || undefined}
+    />
   );
 }

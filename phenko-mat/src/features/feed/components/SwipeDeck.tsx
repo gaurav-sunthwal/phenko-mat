@@ -21,10 +21,10 @@ import {
 import { useCategoryMap } from "@/features/categories/api";
 import { useMe } from "@/features/profile/api";
 import { errorMessage, isApiError } from "@/lib/api/errors";
-import type { FeedItem } from "@/shared/dto";
+import type { FeedItem, SwipeSummary } from "@/shared/dto";
 import { useUi, type FeedScope } from "@/stores/ui";
 import { colors, radius, shadows } from "@/theme";
-import { useFeed, useSwipeActions } from "../api";
+import { useFeed, useSwipeActions, useSwipeSummary } from "../api";
 import { trackSeen } from "../views";
 import { DeckSkeleton } from "./DeckSkeleton";
 import { SwipeCard, type SwipeCardHandle, type SwipeDir } from "./SwipeCard";
@@ -78,6 +78,8 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
     return [...restored, ...(data ?? []).filter((i) => !back.has(i.id))].filter((i) => !swiped[i.id]);
   }, [data, restored, swiped]);
   const top = deck[0];
+  // Only when "Everywhere" runs dry: why it's empty, so we never offer "show passed items" with none to show.
+  const { data: summary } = useSwipeSummary(categoryId, freeOnly, !top && scope === "all" && !query && Boolean(data));
 
   // The top card counts as a view for the owner's analytics.
   const topId = top?.id;
@@ -256,18 +258,12 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
           }
         />
       ) : (
-        <EmptyState
-          emoji="🐝"
-          title="You've seen it all"
-          body="You've swiped through everything for now. Check back soon, or give the ones you passed on another look."
-          action={
-            <Button
-              label={resetting ? "Loading…" : "Show passed items again"}
-              icon={<RefreshIcon size={18} color={colors.white} />}
-              onPress={showPassedAgain}
-              disabled={resetting}
-            />
-          }
+        <ExhaustedDeck
+          summary={summary}
+          freeOnly={freeOnly}
+          inCategory={Boolean(categoryId)}
+          resetting={resetting}
+          onReset={showPassedAgain}
         />
       );
   } else {
@@ -364,6 +360,65 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
         {body}
       </View>
     </GestureDetector>
+  );
+}
+
+/** "Everywhere" has nothing left: say why, and only offer what will actually bring cards back. */
+function ExhaustedDeck({
+  summary,
+  freeOnly,
+  inCategory,
+  resetting,
+  onReset,
+}: {
+  summary: SwipeSummary | undefined;
+  freeOnly: boolean;
+  inCategory: boolean;
+  resetting: boolean;
+  onReset: () => void;
+}) {
+  const where = inCategory ? "in this category" : "right now";
+
+  if (summary && summary.passed > 0) {
+    const n = summary.passed;
+    return (
+      <EmptyState
+        emoji="🐝"
+        title="You've seen it all"
+        body={`You've swiped through everything ${where}. You passed on ${n} ${n === 1 ? "item" : "items"} — give ${n === 1 ? "it" : "them"} another look?`}
+        action={
+          <Button
+            label={resetting ? "Loading…" : `Show ${n} passed ${n === 1 ? "item" : "items"} again`}
+            icon={<RefreshIcon size={18} color={colors.white} />}
+            onPress={onReset}
+            disabled={resetting}
+          />
+        }
+      />
+    );
+  }
+
+  if (summary && summary.wanted > 0) {
+    return (
+      <EmptyState
+        emoji="💛"
+        title="You've said yes to everything"
+        body={`You swiped right on every ${freeOnly ? "free " : ""}listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
+        action={<Button label="Go to your chats" onPress={() => router.navigate("/chats")} />}
+      />
+    );
+  }
+
+  return (
+    <EmptyState
+      emoji="🐝"
+      title="You've seen it all"
+      body={
+        freeOnly
+          ? "Nothing free to swipe on right now. Turn off “Free only” to see everything, or check back soon."
+          : "There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
+      }
+    />
   );
 }
 

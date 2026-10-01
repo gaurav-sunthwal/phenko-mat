@@ -115,6 +115,12 @@ export interface SwipeResult {
   connection: ConnectionSummary | null;
 }
 
+/** What an empty deck is made of: still-available items the user passed on, and ones they said yes to. */
+export interface SwipeSummary {
+  passed: number;
+  wanted: number;
+}
+
 /** A location search suggestion (Google Places on Android/web, Apple Maps on iOS). */
 export interface PlaceSuggestion {
   id: string;
