@@ -346,17 +346,29 @@ export async function removeConnectionsBetween(userId: string, otherId: string) 
 
 /**
  * Deletes a chat for both people (its messages go with it) and disconnects them live: each side's open
- * screens drop the chat straight away. The taker's right-swipe stays, so the item doesn't come back into
- * their feed and re-create the connection.
+ * screens drop the chat straight away.
+ *
+ * What happens to the taker's right swipe depends on who ended it:
+ * - The taker: it becomes a pass. The item leaves their feed for now and comes back with "Show passed items
+ *   again", like anything else they passed on.
+ * - The giver: it stays, so the item doesn't come back into the taker's feed for them to re-open a chat the
+ *   giver chose to end.
  */
 export async function removeConnection(userId: string, connectionId: string) {
   const { otherId } = await participants(userId, connectionId);
   const deleted = await getDb()
     .delete(connections)
     .where(and(eq(connections.id, connectionId), sql`${userId} in (${connections.takerId}, ${connections.giverId})`))
-    .returning({ id: connections.id });
+    .returning({ id: connections.id, itemId: connections.itemId, takerId: connections.takerId });
   partiesCache.delete(connectionId);
   // Already gone (the other person deleted it first): nothing to announce, and the caller got what they wanted.
   if (!deleted.length) return;
+  const [{ itemId, takerId }] = deleted;
+  if (takerId === userId) {
+    await getDb()
+      .update(swipes)
+      .set({ direction: "left", createdAt: new Date() })
+      .where(and(eq(swipes.userId, userId), eq(swipes.itemId, itemId), eq(swipes.direction, "right")));
+  }
   publish([otherId, userId], { type: "connection.removed", connectionId, removedBy: userId });
 }
