@@ -7,19 +7,23 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
+  getRedirectResult,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
   updateProfile,
   type User,
 } from "firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ApiRequestError, api } from "@/lib/client/api";
 import { clientAuth, firebaseConfigured } from "@/lib/client/firebase";
 import { safeNext } from "@/lib/format";
 
 type Mode = "signin" | "signup";
+
+/** Set just before leaving for Google/Apple, so the login page knows to finish a sign-in when it comes back. */
+const REDIRECT_PENDING = "phenko:auth-redirect";
 
 const FIREBASE_MESSAGES: Record<string, string> = {
   "auth/invalid-credential": "Wrong email or password.",
@@ -28,6 +32,8 @@ const FIREBASE_MESSAGES: Record<string, string> = {
   "auth/weak-password": "Use at least 8 characters for your password.",
   "auth/too-many-requests": "Too many attempts. Please wait a bit and try again.",
   "auth/popup-closed-by-user": "Sign-in was cancelled.",
+  "auth/redirect-cancelled-by-user": "Sign-in was cancelled.",
+  "auth/web-storage-unsupported": "Your browser is blocking sign-in storage. Allow cookies for this site and try again.",
   "auth/account-exists-with-different-credential":
     "You already have an account with this email using a different sign-in method.",
   "auth/network-request-failed": "Network error. Check your connection.",
@@ -40,7 +46,6 @@ function describe(e: unknown) {
 }
 
 export function LoginForm() {
-  const router = useRouter();
   const next = safeNext(useSearchParams().get("next"));
   const [mode, setMode] = useState<Mode>("signin");
   const [name, setName] = useState("");
@@ -66,9 +71,46 @@ export function LoginForm() {
     }
     // The server session is now the source of truth; drop the client-side Firebase session.
     await signOut(await clientAuth());
-    router.replace(next);
-    router.refresh();
+    // A full page load, not router.replace: the client router may hold a copy of `next` prefetched while signed
+    // out (i.e. "redirect to /login"), which left people stuck here after a successful sign-in.
+    window.location.replace(next);
+    // Leaving the page: stay "busy" until it unloads instead of flashing the buttons back on.
+    await new Promise(() => undefined);
   }
+
+  // Back from Google/Apple: finish the sign-in that `socialSignIn` started.
+  useEffect(() => {
+    let pending = false;
+    try {
+      pending = sessionStorage.getItem(REDIRECT_PENDING) === "1";
+      sessionStorage.removeItem(REDIRECT_PENDING);
+    } catch {
+      // Storage blocked: nothing we can resume.
+    }
+    if (!pending || !firebaseConfigured) return;
+    let cancelled = false;
+    void (async () => {
+      const auth = await clientAuth();
+      if (cancelled) return;
+      setBusy(true);
+      try {
+        const cred = await getRedirectResult(auth);
+        // null: the user came back without signing in (e.g. pressed Back on Google's page).
+        if (cred && !cancelled) await startSession(cred.user);
+        else setBusy(false);
+      } catch (e) {
+        if (!cancelled) {
+          setError(describe(e));
+          setBusy(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Runs once on arrival; `startSession` only reads stable values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
@@ -115,8 +157,16 @@ export function LoginForm() {
         p.addScope("email");
         p.addScope("name");
       }
-      const cred = await signInWithPopup(auth, p);
-      await startSession(cred.user);
+      // A full-page redirect, not a popup (popups get blocked, and break on phones and in in-app browsers).
+      // The page comes back to this URL and the effect above finishes the sign-in.
+      try {
+        sessionStorage.setItem(REDIRECT_PENDING, "1");
+      } catch {
+        // Storage blocked: Firebase's redirect needs it too and will report the error.
+      }
+      await signInWithRedirect(auth, p);
+      // Navigation is under way; keep the buttons disabled until the page unloads.
+      await new Promise(() => undefined);
     });
 
   const resendVerification = () =>

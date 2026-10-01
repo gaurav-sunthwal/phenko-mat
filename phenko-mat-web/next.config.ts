@@ -25,8 +25,23 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
+  // Firebase's sign-in handler, served from our own origin. With NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN set to this site's
+  // host, the Google/Apple redirect stays first-party — browsers that block third-party storage (Safari, Firefox,
+  // Brave) otherwise drop the sign-in when it comes back from <project>.firebaseapp.com.
+  async rewrites() {
+    const project = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (!project) return [];
+    return [
+      { source: "/__/auth/:path*", destination: `https://${project}.firebaseapp.com/__/auth/:path*` },
+      { source: "/__/firebase/:path*", destination: `https://${project}.firebaseapp.com/__/firebase/:path*` },
+    ];
+  },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The Firebase SDK frames /__/auth/iframe from this same origin to finish sign-in; DENY would block that.
+      { source: "/__/auth/:path*", headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }] },
+    ];
   },
 };
 
