@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClarityScript } from "@/components/Clarity";
 import { ErrorReporter } from "@/components/ErrorReporter";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ClarityScript />
         <GoogleAnalytics />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
