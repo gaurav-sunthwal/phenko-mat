@@ -24,7 +24,9 @@ export function ClarityScript() {
   if (!PROJECT_ID) return null;
   const environment = process.env.NODE_ENV === "production" ? "production" : "development";
   return (
-    <Script id="clarity" strategy="afterInteractive">
+    // Not id="clarity": browsers expose element ids as globals, so window.clarity would become this <script>
+    // element, the loader would keep it instead of its queue function, and every clarity(...) call would throw.
+    <Script id="ms-clarity-tag" strategy="afterInteractive">
       {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script",${JSON.stringify(PROJECT_ID)});
@@ -37,7 +39,8 @@ window.clarity("set","environment",${JSON.stringify(environment)});`}
 export function ClarityIdentify() {
   const { data: me } = useMe();
   useEffect(() => {
-    if (PROJECT_ID && me?.id) window.clarity?.("identify", me.id);
+    // Analytics must never break the app: only call Clarity once it's really there.
+    if (PROJECT_ID && me?.id && typeof window.clarity === "function") window.clarity("identify", me.id);
   }, [me?.id]);
   return null;
 }
