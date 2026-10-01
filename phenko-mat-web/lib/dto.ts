@@ -1,0 +1,133 @@
+/* Shapes returned by the API. Exact coordinates of other people are never included. */
+
+export type Condition = "new" | "like_new" | "good" | "used";
+export type ItemStatus = "active" | "given" | "removed";
+
+export interface PublicUser {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+/** Someone else's profile, as anyone who can see their listings may view it. */
+export interface PublicProfile extends PublicUser {
+  bio: string;
+  area: string | null;
+  memberSince: string;
+  stats: { given: number; got: number };
+  /** Their live listings, newest first. */
+  listings: { id: string; title: string; photo: string; priceInr: number }[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  emoji: string;
+  group: "tier" | "kind" | "custom";
+  blurb: string | null;
+  nearbyCount: number;
+  totalCount: number;
+}
+
+export interface FeedItem {
+  id: string;
+  title: string;
+  description: string;
+  photos: string[];
+  condition: Condition;
+  priceInr: number;
+  area: string;
+  distanceKm: number | null;
+  categoryIds: string[];
+  createdAt: string;
+  status: ItemStatus;
+  owner: PublicUser;
+  /** The exact pickup pin — only present for the item's owner (so they can edit it). */
+  location?: { lat: number; lng: number };
+}
+
+export interface MyItem {
+  id: string;
+  title: string;
+  photos: string[];
+  priceInr: number;
+  status: ItemStatus;
+  categoryIds: string[];
+  createdAt: string;
+  connectionCount: number;
+  /** People who have seen it in their deck. */
+  viewCount: number;
+}
+
+/** Owner-only numbers for one listing. Counts are people, not events; reporters stay anonymous. */
+export interface ItemStats {
+  views: number;
+  detailViews: number;
+  wanted: number;
+  passed: number;
+  chats: number;
+  reports: { total: number; byReason: Partial<Record<"spam" | "scam" | "prohibited" | "offensive" | "other", number>> };
+}
+
+export interface LikedItem {
+  connectionId: string;
+  item: { id: string; title: string; photo: string; priceInr: number; status: ItemStatus };
+  owner: PublicUser;
+}
+
+export interface Me {
+  id: string;
+  name: string;
+  email: string | null;
+  bio: string;
+  avatarUrl: string | null;
+  area: string | null;
+  location: { lat: number; lng: number } | null;
+  radiusKm: number;
+  interests: string[];
+  /** `got`: items other people marked as given to this user. */
+  stats: { listed: number; given: number; got: number; connections: number };
+}
+
+export interface ConnectionSummary {
+  id: string;
+  role: "giver" | "taker";
+  item: { id: string; title: string; photo: string; priceInr: number; status: ItemStatus };
+  other: PublicUser;
+  lastMessage: { body: string; mine: boolean; createdAt: string } | null;
+  unread: number;
+  /** When the other person last read this chat — drives "Seen". */
+  otherReadAt: string;
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderId: string;
+  clientId: string | null;
+  body: string;
+  mine: boolean;
+  createdAt: string;
+}
+
+export interface SwipeResult {
+  connection: ConnectionSummary | null;
+}
+
+/** A location search suggestion (Google Places on Android/web, Apple Maps on iOS). */
+export interface PlaceSuggestion {
+  id: string;
+  title: string;
+  subtitle: string;
+}
+
+/** A picked place: where it is, and the area name to show others (e.g. "Koregaon Park, Pune"). */
+export interface ResolvedPlace {
+  lat: number;
+  lng: number;
+  area: string;
+}
+
+export interface ApiErrorBody {
+  error: { code: string; message: string; fields?: Record<string, string[]> };
+}

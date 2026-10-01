@@ -1,0 +1,15 @@
+/** Built-in categories, seeded into the database by `pnpm db:seed`. */
+export const DEFAULT_CATEGORIES: { id: string; name: string; emoji: string; group: "tier" | "kind" | "custom"; blurb?: string }[] = [
+  { id: "premium", name: "Premium", emoji: "💎", group: "tier", blurb: "High-value finds in great shape" },
+  { id: "normal", name: "Normal", emoji: "✨", group: "tier", blurb: "Everyday things, still good to go" },
+  { id: "daily-needs", name: "Daily Needs", emoji: "🧺", group: "tier", blurb: "Essentials people use every day" },
+  { id: "clothing", name: "Clothing", emoji: "👕", group: "kind" },
+  { id: "electronics", name: "Electronics", emoji: "🎧", group: "kind" },
+  { id: "books", name: "Books", emoji: "📚", group: "kind" },
+  { id: "furniture", name: "Furniture", emoji: "🛋️", group: "kind" },
+  { id: "kitchen", name: "Kitchen", emoji: "🍳", group: "kind" },
+  { id: "kids-toys", name: "Kids & Toys", emoji: "🧸", group: "kind" },
+  { id: "sports", name: "Sports", emoji: "🚲", group: "kind" },
+  { id: "accessories", name: "Accessories", emoji: "👜", group: "kind" },
+  { id: "home-decor", name: "Home Decor", emoji: "🪴", group: "kind" },
+];

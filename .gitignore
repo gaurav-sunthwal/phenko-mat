@@ -1,0 +1,10 @@
+# Each project has its own .gitignore; these are repo-wide safety nets.
+.DS_Store
+.env
+.env*.local
+.demo-logins.local
+*.pem
+# Firebase / Google service-account keys
+*-firebase-adminsdk-*.json
+phenko-mat-*-[0-9a-f]*.json
+node_modules/

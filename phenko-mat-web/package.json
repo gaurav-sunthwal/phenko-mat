@@ -1,0 +1,52 @@
+{
+  "name": "phenko-mat-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n next,ws -c yellow,cyan \"next dev\" \"tsx watch realtime/server.ts\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx scripts/seed.ts",
+    "dev:next": "next dev",
+    "dev:realtime": "tsx watch realtime/server.ts",
+    "start:realtime": "tsx realtime/server.ts",
+    "photos:cleanup": "tsx --conditions=react-server --env-file=.env.local scripts/cleanup-photos.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1143.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.3",
+    "firebase": "^12.19.0",
+    "firebase-admin": "^14.5.0",
+    "leaflet": "^1.9.4",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "swr": "^2.5.1",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/ws": "^8.18.2",
+    "concurrently": "^10.0.5",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@12.6.0"
+}

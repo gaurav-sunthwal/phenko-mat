@@ -1,0 +1,9 @@
+{
+  "name": "apple-places",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Location search suggestions from Apple Maps (MapKit) for Phenko Mat on iOS.",
+  "main": "index.ts",
+  "license": "MIT",
+  "author": "Phenko Mat"
+}

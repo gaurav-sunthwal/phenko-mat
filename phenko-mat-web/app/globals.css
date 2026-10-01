@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-honey: #ffc629;
+  --color-honey-deep: #f5b400;
+  --color-ink: #1d1d1d;
+  --color-ink-soft: #6b6b6b;
+  --color-cream: #fff5d6;
+  --color-paper: #fbf8f1;
+  --color-line: #ece7da;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fade: fade 200ms ease-out both;
+  --animate-rise: rise 280ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  --animate-pop: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+
+  @keyframes fade {
+    from { opacity: 0; }
+  }
+  @keyframes rise {
+    from { transform: translateY(40px); opacity: 0; }
+  }
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0; }
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

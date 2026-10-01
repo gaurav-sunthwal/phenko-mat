@@ -1,0 +1,357 @@
+import { sql } from "drizzle-orm";
+import {
+  bigint,
+  check,
+  customType,
+  doublePrecision,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+/**
+ * PostGIS geography point. Always derived from lat/lng via a generated column, never written
+ * or read directly by app code, so exact coordinates only leave the DB when we ask for them.
+ */
+const geography = customType<{ data: string }>({
+  dataType: () => "geography(Point, 4326)",
+});
+
+const point = (lng: string, lat: string) =>
+  sql.raw(`(ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography)`);
+
+const timestamps = {
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+};
+
+export const categoryGroup = pgEnum("category_group", ["tier", "kind", "custom"]);
+export const itemCondition = pgEnum("item_condition", ["new", "like_new", "good", "used"]);
+export const itemStatus = pgEnum("item_status", ["active", "given", "removed"]);
+export const swipeDirection = pgEnum("swipe_direction", ["left", "right"]);
+export const reportReason = pgEnum("report_reason", ["spam", "scam", "prohibited", "offensive", "other"]);
+
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    firebaseUid: varchar("firebase_uid", { length: 128 }).notNull(),
+    email: varchar("email", { length: 254 }),
+    name: varchar("name", { length: 60 }).notNull(),
+    bio: varchar("bio", { length: 300 }).notNull().default(""),
+    avatarUrl: text("avatar_url"),
+    area: varchar("area", { length: 80 }),
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+    location: geography("location").generatedAlwaysAs(point("lng", "lat")),
+    radiusKm: smallint("radius_km").notNull().default(10),
+    /** Set by an admin: the account can't use the app and its listings are hidden everywhere. */
+    bannedAt: timestamp("banned_at", { withTimezone: true }),
+    banReason: varchar("ban_reason", { length: 300 }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("users_firebase_uid_key").on(t.firebaseUid),
+    check("users_radius_range", sql`${t.radiusKm} between 1 and 100`),
+    check("users_lat_range", sql`${t.lat} between -90 and 90`),
+    check("users_lng_range", sql`${t.lng} between -180 and 180`),
+    check("users_location_pair", sql`(${t.lat} is null) = (${t.lng} is null)`),
+  ],
+);
+
+export const categories = pgTable(
+  "categories",
+  {
+    id: varchar("id", { length: 48 }).primaryKey(),
+    name: varchar("name", { length: 40 }).notNull(),
+    emoji: varchar("emoji", { length: 16 }).notNull(),
+    group: categoryGroup("group").notNull().default("custom"),
+    blurb: varchar("blurb", { length: 120 }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [uniqueIndex("categories_name_lower_key").on(sql`lower(${t.name})`)],
+);
+
+export const userInterests = pgTable(
+  "user_interests",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    categoryId: varchar("category_id", { length: 48 })
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.categoryId] })],
+);
+
+export const items = pgTable(
+  "items",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: varchar("title", { length: 80 }).notNull(),
+    description: varchar("description", { length: 1000 }).notNull().default(""),
+    photos: text("photos").array().notNull(),
+    condition: itemCondition("condition").notNull(),
+    /** Whole rupees; 0 means free. */
+    priceInr: integer("price_inr").notNull().default(0),
+    area: varchar("area", { length: 80 }).notNull(),
+    lat: doublePrecision("lat").notNull(),
+    lng: doublePrecision("lng").notNull(),
+    location: geography("location")
+      .notNull()
+      .generatedAlwaysAs(point("lng", "lat")),
+    status: itemStatus("status").notNull().default("active"),
+    /** Who the owner says got it (one of the people who connected); null if unknown or not given. */
+    givenToId: uuid("given_to_id").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [
+    // Feed: nearby active items. Partial index keeps it small as given items pile up.
+    index("items_active_location_idx").using("gist", t.location).where(sql`${t.status} = 'active'`),
+    index("items_owner_created_idx").on(t.ownerId, t.createdAt.desc()),
+    index("items_given_to_idx").on(t.givenToId).where(sql`${t.givenToId} is not null`),
+    check("items_price_range", sql`${t.priceInr} between 0 and 10000000`),
+    check("items_photos_count", sql`cardinality(${t.photos}) between 1 and 6`),
+    check("items_lat_range", sql`${t.lat} between -90 and 90`),
+    check("items_lng_range", sql`${t.lng} between -180 and 180`),
+  ],
+);
+
+export const itemCategories = pgTable(
+  "item_categories",
+  {
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    categoryId: varchar("category_id", { length: 48 })
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.itemId, t.categoryId] }),
+    index("item_categories_category_idx").on(t.categoryId, t.itemId),
+  ],
+);
+
+export const swipes = pgTable(
+  "swipes",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    direction: swipeDirection("direction").notNull(),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.itemId] }),
+    index("swipes_user_created_idx").on(t.userId, t.createdAt.desc()),
+    index("swipes_item_idx").on(t.itemId),
+  ],
+);
+
+/** Who has seen a listing (its card reached the top of their deck), once per person. Owner analytics only. */
+export const itemViews = pgTable(
+  "item_views",
+  {
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    /** When they first opened the details sheet (ⓘ); null if they never did. */
+    detailsOpenedAt: timestamp("details_opened_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.itemId, t.userId] })],
+);
+
+export const connections = pgTable(
+  "connections",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    takerId: uuid("taker_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    giverId: uuid("giver_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }).notNull().defaultNow(),
+    takerReadAt: timestamp("taker_read_at", { withTimezone: true }).notNull().defaultNow(),
+    giverReadAt: timestamp("giver_read_at", { withTimezone: true }).notNull().default(sql`'epoch'`),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    uniqueIndex("connections_item_taker_key").on(t.itemId, t.takerId),
+    index("connections_taker_recent_idx").on(t.takerId, t.lastMessageAt.desc()),
+    index("connections_giver_recent_idx").on(t.giverId, t.lastMessageAt.desc()),
+    check("connections_distinct_parties", sql`${t.takerId} <> ${t.giverId}`),
+  ],
+);
+
+export const messages = pgTable(
+  "messages",
+  {
+    // Monotonic id doubles as the polling cursor.
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    connectionId: uuid("connection_id")
+      .notNull()
+      .references(() => connections.id, { onDelete: "cascade" }),
+    senderId: uuid("sender_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: varchar("body", { length: 2000 }).notNull(),
+    /** Client-generated id: makes sends idempotent across retries and lets clients match optimistic bubbles. */
+    clientId: uuid("client_id"),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    index("messages_connection_id_idx").on(t.connectionId, t.id),
+    uniqueIndex("messages_sender_client_id_key").on(t.senderId, t.clientId),
+    check("messages_body_not_blank", sql`length(btrim(${t.body})) > 0`),
+  ],
+);
+
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    reporterId: uuid("reporter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id").references(() => items.id, { onDelete: "cascade" }),
+    reportedUserId: uuid("reported_user_id").references(() => users.id, { onDelete: "cascade" }),
+    reason: reportReason("reason").notNull(),
+    details: varchar("details", { length: 500 }),
+    /** Set when an admin handles the report: "actioned" (listing removed / user suspended) or "dismissed". */
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolution: varchar("resolution", { length: 20 }),
+    resolvedBy: varchar("resolved_by", { length: 254 }),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    uniqueIndex("reports_reporter_item_key").on(t.reporterId, t.itemId),
+    // Reporting a person (no item): once per reporter.
+    uniqueIndex("reports_reporter_user_key").on(t.reporterId, t.reportedUserId).where(sql`${t.itemId} is null`),
+    check("reports_has_target", sql`${t.itemId} is not null or ${t.reportedUserId} is not null`),
+    index("reports_open_idx").on(t.itemId).where(sql`${t.resolvedAt} is null`),
+  ],
+);
+
+/**
+ * "Don't show me this person again". Symmetric in effect: neither sees the other's listings, their chats
+ * are deleted, and no new chat can start. Only the blocker can undo it.
+ */
+export const blocks = pgTable(
+  "blocks",
+  {
+    blockerId: uuid("blocker_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    blockedId: uuid("blocked_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    index("blocks_blocked_idx").on(t.blockedId),
+    check("blocks_not_self", sql`${t.blockerId} <> ${t.blockedId}`),
+  ],
+);
+
+/** Every action taken in the admin panel, for accountability. Kept even if the target is deleted. */
+export const adminActions = pgTable(
+  "admin_actions",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    adminEmail: varchar("admin_email", { length: 254 }).notNull(),
+    action: varchar("action", { length: 40 }).notNull(),
+    targetType: varchar("target_type", { length: 20 }).notNull(),
+    targetId: varchar("target_id", { length: 64 }).notNull(),
+    /** Human-readable context (listing title, user name, reason) since the target may be gone later. */
+    summary: varchar("summary", { length: 500 }),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [index("admin_actions_created_idx").on(t.createdAt.desc())],
+);
+
+/**
+ * Errors from every part of the system (API, realtime gateway, web and mobile clients, cron jobs), for
+ * the admin panel's Errors page. `fingerprint` groups occurrences of the same problem.
+ */
+export const errorEvents = pgTable(
+  "error_events",
+  {
+    id: uuid("id").primaryKey().default(sql`uuidv7()`),
+    /** api | realtime | web | mobile | cron */
+    source: varchar("source", { length: 20 }).notNull(),
+    level: varchar("level", { length: 10 }).notNull().default("error"),
+    fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+    /** API route pattern (`/api/items/:id`) or client screen. */
+    route: varchar("route", { length: 200 }),
+    method: varchar("method", { length: 10 }),
+    status: integer("status"),
+    code: varchar("code", { length: 60 }),
+    message: varchar("message", { length: 1000 }).notNull(),
+    stack: text("stack"),
+    /** No foreign key: errors are kept (and stay readable) after the account is deleted. */
+    userId: uuid("user_id"),
+    /** Platform, app version, user agent… */
+    meta: text("meta"),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [
+    index("error_events_created_idx").on(t.createdAt.desc()),
+    index("error_events_fingerprint_idx").on(t.fingerprint, t.createdAt.desc()),
+  ],
+);
+
+/**
+ * Per-minute API traffic per route, aggregated in memory and flushed in batches (no write per request).
+ * Drives error rates and latency on the admin Health page.
+ */
+export const requestStats = pgTable(
+  "request_stats",
+  {
+    minute: timestamp("minute", { withTimezone: true }).notNull(),
+    route: varchar("route", { length: 200 }).notNull(),
+    total: integer("total").notNull().default(0),
+    errors4xx: integer("errors_4xx").notNull().default(0),
+    errors5xx: integer("errors_5xx").notNull().default(0),
+    /** Requests slower than the "slow" threshold (2 s). */
+    slow: integer("slow").notNull().default(0),
+    durationMsSum: bigint("duration_ms_sum", { mode: "number" }).notNull().default(0),
+    durationMsMax: integer("duration_ms_max").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.minute, t.route] }), index("request_stats_minute_idx").on(t.minute.desc())],
+);
+
+/** Fixed-window counters shared by every server instance. */
+export const rateLimits = pgTable("rate_limits", {
+  key: varchar("key", { length: 200 }).primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull(),
+});
