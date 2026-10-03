@@ -31,7 +31,6 @@ const JSON_LD = {
       applicationCategory: "LifestyleApplication",
       operatingSystem: "Any (web browser)",
       browserRequirements: "Requires JavaScript",
-      offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
       publisher: { "@id": absoluteUrl("/#organization") },
     },
     faqJsonLd(HOME_FAQ),
