@@ -141,7 +141,7 @@ export function SwipeCard({ item, categories, isTop, depth, exitDir, onSwipe, pr
         <div className="absolute inset-x-0 bottom-0 p-5 text-white">
           <div className="mb-2 flex items-center gap-2">
             <span
-              className={`rounded-full px-3 py-1 text-sm font-extrabold ${item.priceInr === 0 ? "bg-honey text-ink" : "bg-white text-ink"}`}
+              className="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-ink"
             >
               {formatPrice(item.priceInr)}
             </span>

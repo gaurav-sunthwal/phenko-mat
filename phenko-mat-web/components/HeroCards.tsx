@@ -6,7 +6,7 @@ const unsplash = (id: string) => `https://images.unsplash.com/${id}?w=700&q=80&a
 const HERO_CARDS = [
   { id: "photo-1586023492125-27b2c045efd7", title: "Mustard armchair", meta: "₹2,500 · 1.2 km", rotate: "-rotate-6", pos: "left-0 top-10" },
   { id: "photo-1485965120184-e220f721d03e", title: "City bike", meta: "₹3,500 · 0.8 km", rotate: "rotate-6", pos: "right-0 top-4" },
-  { id: "photo-1551028719-00167b16eac5", title: "Leather jacket", meta: "Free · 600 m", rotate: "rotate-0", pos: "left-1/2 -translate-x-1/2 top-0" },
+  { id: "photo-1551028719-00167b16eac5", title: "Leather jacket", meta: "₹150 · 600 m", rotate: "rotate-0", pos: "left-1/2 -translate-x-1/2 top-0" },
 ];
 
 /** The stacked swipe cards + pass/want buttons used on the landing page and the sign-in page. */

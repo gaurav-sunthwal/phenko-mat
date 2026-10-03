@@ -42,7 +42,7 @@ export default async function OpengraphImage() {
           <span style={{ fontSize: 92, lineHeight: 1.02, letterSpacing: "-0.04em" }}>Pass it on.</span>
         </div>
         <span style={{ fontSize: 34, letterSpacing: "-0.01em", opacity: 0.75 }}>
-          Give away and get free things from people near you
+          Pass on and find second-hand things near you
         </span>
       </div>
     ),

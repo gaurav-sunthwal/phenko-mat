@@ -230,7 +230,7 @@ export function LocationSetup({ onDone }: { onDone?: () => void }) {
           Where are you?
         </Text>
         <Text color={colors.inkSoft} align="center" style={styles.mt2}>
-          We&apos;ll show you things people are giving away near you.
+          We&apos;ll show you things people are passing on near you.
         </Text>
       </View>
       <LocationForm onDone={onDone} />

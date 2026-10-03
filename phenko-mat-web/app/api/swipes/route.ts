@@ -13,11 +13,8 @@ export const POST = authedRoute(
 
 /** For an empty deck: how many still-listed items were passed vs. wanted (same filters as the feed). */
 export const GET = authedRoute(async ({ req, user }) => {
-  const { category, free } = readQuery(
-    req,
-    z.object({ category: categoryIdSchema.optional(), free: z.enum(["1"]).optional() }),
-  );
-  return swipeSummary(user.id, { categoryId: category, freeOnly: free === "1" });
+  const { category } = readQuery(req, z.object({ category: categoryIdSchema.optional() }));
+  return swipeSummary(user.id, { categoryId: category });
 });
 
 /** Clears "pass" swipes so those items show up again. */

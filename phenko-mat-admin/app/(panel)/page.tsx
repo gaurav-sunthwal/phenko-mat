@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   const cards = [
     { label: "Users", value: stats.users, sub: `+${stats.users_7d} this week` },
     { label: "Active listings", value: stats.active_listings, sub: `+${stats.listings_7d} new this week` },
-    { label: "Given away", value: stats.given, sub: "all time" },
+    { label: "Passed on", value: stats.given, sub: "all time" },
     { label: "Connections", value: stats.connections, sub: `+${stats.connections_7d} this week` },
     { label: "Messages", value: stats.messages_7d, sub: "last 7 days" },
     { label: "Suspended", value: stats.suspended, sub: "accounts", href: "/users?filter=suspended" },

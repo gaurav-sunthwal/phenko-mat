@@ -6,7 +6,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   path: "/help",
   title: "Help & FAQ",
-  description: `Answers about ${SITE.name}: how giving away and finding free things works, pricing, safety, location privacy and your account.`,
+  description: `Answers about ${SITE.name}: how passing on and finding things works, pricing, safety, location privacy and your account.`,
 });
 
 const FAQ: { q: string; a: string }[] = [
@@ -15,8 +15,8 @@ const FAQ: { q: string; a: string }[] = [
     a: "List things you no longer need. People nearby swipe through listings; swiping right on yours opens a chat with you, where you agree on a pickup.",
   },
   {
-    q: "Is it free?",
-    a: "Yes. Most things are given away for free. Owners can also set a price, which you pay them directly when you pick the item up. We never handle payments.",
+    q: "How much does it cost?",
+    a: "Each owner sets a price, from as little as ₹1, which you pay them directly when you pick the item up. We never handle payments, and the app itself costs nothing to use.",
   },
   {
     q: "Who can see my location?",

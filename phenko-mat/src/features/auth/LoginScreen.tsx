@@ -127,7 +127,7 @@ export function LoginScreen() {
             Don&apos;t throw it.{"\n"}Pass it on.
           </Text>
           <Text size="lg" style={styles.lead}>
-            Sign in to swipe on things your neighbours are giving away.
+            Sign in to swipe on things your neighbours are passing on.
           </Text>
 
           {!firebaseConfigured ? (

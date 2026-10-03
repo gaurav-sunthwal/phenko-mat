@@ -204,7 +204,7 @@ export async function resetPasses(userId: string, categoryId?: string) {
  */
 export async function swipeSummary(
   userId: string,
-  opts: { categoryId?: string; freeOnly?: boolean },
+  opts: { categoryId?: string },
 ): Promise<SwipeSummary> {
   const result = await getDb().execute<{ passed: number; wanted: number }>(sql`
     select count(*) filter (where s.direction = 'left')::int as passed,
@@ -214,7 +214,6 @@ export async function swipeSummary(
     where s.user_id = ${userId}
       and i.status = 'active'
       and i.owner_id <> ${userId}
-      ${opts.freeOnly ? sql`and i.price_inr = 0` : sql``}
       ${opts.categoryId ? sql`and exists (select 1 from item_categories ic where ic.item_id = i.id and ic.category_id = ${opts.categoryId})` : sql``}
   `);
   const row = result.rows[0];

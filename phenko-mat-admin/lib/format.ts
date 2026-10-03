@@ -3,7 +3,7 @@ const date = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" });
 
 export const formatDateTime = (iso: string | Date) => dateTime.format(new Date(iso));
 export const formatDate = (iso: string | Date) => date.format(new Date(iso));
-export const formatPrice = (inr: number) => (inr === 0 ? "Free" : `₹${inr.toLocaleString("en-IN")}`);
+export const formatPrice = (inr: number) => `₹${inr.toLocaleString("en-IN")}`;
 
 export function timeAgo(iso: string | Date) {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);

@@ -62,7 +62,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-location",
       {
         locationWhenInUsePermission:
-          "Phenko Mat uses your approximate location to show things people are giving away near you.",
+          "Phenko Mat uses your approximate location to show things people are passing on near you.",
       },
     ],
     [

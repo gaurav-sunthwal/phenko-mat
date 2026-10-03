@@ -55,7 +55,7 @@ export function ProfileView() {
           {me.bio && <p className="mt-4 text-sm leading-relaxed">{me.bio}</p>}
           <dl className="mt-5 grid grid-cols-3 gap-2 text-center">
             {[
-              ["Given away", me.stats.given],
+              ["Passed on", me.stats.given],
               ["Received", me.stats.got],
               ["Connections", me.stats.connections],
             ].map(([label, value]) => (

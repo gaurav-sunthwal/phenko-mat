@@ -5,7 +5,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   path: "/guidelines",
   title: "Community guidelines",
-  description: `What you can and can't list on ${SITE.name}, and how to give away and pick up things safely.`,
+  description: `What you can and can't list on ${SITE.name}, and how to pass on and pick up things safely.`,
 });
 
 export default function GuidelinesPage() {

@@ -65,7 +65,7 @@ export function PublicProfileScreen({ id }: { id: string }) {
         <View style={styles.stats}>
           {(
             [
-              ["Given away", profile.stats.given],
+              ["Passed on", profile.stats.given],
               ["Received", profile.stats.got],
             ] as const
           ).map(([label, value]) => (

@@ -222,7 +222,7 @@ export function LocationSetup({ onDone }: { onDone?: () => void }) {
       <div className="mb-6 text-center">
         <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-honey text-4xl">📍</div>
         <h2 className="text-2xl font-extrabold">Where are you?</h2>
-        <p className="mt-2 text-ink-soft">We&apos;ll show you things people are giving away near you.</p>
+        <p className="mt-2 text-ink-soft">We&apos;ll show you things people are passing on near you.</p>
       </div>
       <LocationForm onDone={onDone} />
     </div>

@@ -7,7 +7,7 @@ import { alpha, colors, radius } from "@/theme";
 /** Honey card with avatar, area, bio and stats. */
 export function ProfileHeader({ me }: { me: Me }) {
   const stats = [
-    ["Given away", me.stats.given],
+    ["Passed on", me.stats.given],
     ["Received", me.stats.got],
     ["Connections", me.stats.connections],
   ] as const;

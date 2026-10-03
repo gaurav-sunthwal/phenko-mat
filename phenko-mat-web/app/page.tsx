@@ -8,7 +8,7 @@ import { DEFAULT_CATEGORIES } from "@/lib/catalog";
 
 export const metadata: Metadata = pageMetadata({ path: "/", description: SEO.description });
 
-/** Who we are, the site, the free web app, and the FAQ below, linked into one graph for search engines and AI. */
+/** Who we are, the site, the web app, and the FAQ below, linked into one graph for search engines and AI. */
 const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -39,7 +39,7 @@ const JSON_LD = {
 };
 
 const STEPS = [
-  { n: "1", title: "Snap & list", body: "Photograph the thing you don't use anymore. Pick a category, give it free or set a small price." },
+  { n: "1", title: "Snap & list", body: "Photograph the thing you don't use anymore. Pick a category and set a small price — even ₹1." },
   { n: "2", title: "Neighbours swipe", body: "People nearby see it in their feed. Right swipe means “I want this”, left means “not for me”." },
   { n: "3", title: "Connect & hand over", body: "A right swipe opens a chat. Agree on a time, meet up, and it finds a second home." },
 ];
@@ -67,8 +67,8 @@ export default function Home() {
               first swap.
             </h1>
             <p className="mt-6 max-w-md text-lg md:text-xl">
-              Give away what you don&apos;t need and get free things from people near you. Swipe through what
-              neighbours are giving away and connect in one tap.
+              Pass on what you don&apos;t need and find second-hand things from people near you, from ₹1. Swipe
+              through what neighbours are passing on and connect in one tap.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/feed" className="rounded-full bg-ink px-7 py-4 text-lg font-extrabold text-white transition hover:bg-black">

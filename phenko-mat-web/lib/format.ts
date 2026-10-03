@@ -8,7 +8,7 @@ export const CONDITION_LABEL: Record<Condition, string> = {
 };
 
 export function formatPrice(price: number) {
-  return price === 0 ? "Free" : `₹${price.toLocaleString("en-IN")}`;
+  return `₹${price.toLocaleString("en-IN")}`;
 }
 
 export function formatDistance(km: number | null) {

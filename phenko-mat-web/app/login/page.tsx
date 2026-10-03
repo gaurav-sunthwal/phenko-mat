@@ -9,9 +9,9 @@ import { LoginForm } from "./LoginForm";
 export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: true } };
 
 const POINTS = [
-  { emoji: "📍", text: "Swipe through things neighbours are giving away, sorted by distance." },
+  { emoji: "📍", text: "Swipe through things neighbours are passing on, sorted by distance." },
   { emoji: "💬", text: "Swipe right to chat with the owner and plan a pickup." },
-  { emoji: "📦", text: "List what you don't need in under a minute. Most things go free." },
+  { emoji: "📦", text: "List what you don't need in under a minute, from ₹1." },
 ];
 
 /**
@@ -82,7 +82,7 @@ export default function LoginPage() {
             </h1>
             <h1 className="hidden text-3xl font-black tracking-tight lg:block">Welcome to Phenko Mat</h1>
             <p className="mt-3 mb-8 text-lg lg:text-base lg:text-ink-soft">
-              Sign in to swipe on things your neighbours are giving away.
+              Sign in to swipe on things your neighbours are passing on.
             </p>
             <Suspense>
               <LoginForm />

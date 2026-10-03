@@ -184,7 +184,7 @@ export const SwipeCard = memo(function SwipeCard({ item, categories, depth, onSw
 
           <View style={styles.meta}>
             <View style={styles.badges}>
-              <View style={[styles.priceBadge, { backgroundColor: item.priceInr === 0 ? colors.honey : colors.white }]}>
+              <View style={styles.priceBadge}>
                 <Text weight="extrabold" size="sm">
                   {formatPrice(item.priceInr)}
                 </Text>
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   scrim: { position: "absolute", left: 0, right: 0, bottom: 0, height: "67%" },
   meta: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 20 },
   badges: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  priceBadge: { borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 4 },
+  priceBadge: { borderRadius: radius.full, backgroundColor: colors.white, paddingHorizontal: 12, paddingVertical: 4 },
   glassBadge: { borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 4, backgroundColor: alpha(colors.white, 0.2) },
   titleRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 12 },
   place: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },

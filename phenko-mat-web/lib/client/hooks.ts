@@ -24,17 +24,16 @@ export function preloadAppData() {
   preload("/api/connections", fetcher);
 }
 
-function feedKey(categoryId: string | undefined, scope: FeedScope, q: string | undefined, freeOnly: boolean) {
+function feedKey(categoryId: string | undefined, scope: FeedScope, q: string | undefined) {
   const qs = new URLSearchParams({ scope });
   if (categoryId) qs.set("category", categoryId);
   if (q) qs.set("q", q);
-  if (freeOnly) qs.set("free", "1");
   return `/api/feed?${qs}`;
 }
 
 /** Pass `scope: null` to wait (e.g. until we know whether the user has a location). `q`: search results. */
-export const useFeed = (categoryId: string | undefined, scope: FeedScope | null, q?: string, freeOnly = false) =>
-  useSWR<FeedItem[]>(scope ? feedKey(categoryId, scope, q, freeOnly) : null, fetcher, {
+export const useFeed = (categoryId: string | undefined, scope: FeedScope | null, q?: string) =>
+  useSWR<FeedItem[]>(scope ? feedKey(categoryId, scope, q) : null, fetcher, {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });

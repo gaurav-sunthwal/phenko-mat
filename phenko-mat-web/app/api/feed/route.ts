@@ -4,8 +4,8 @@ import { feedQuerySchema } from "@/lib/validation";
 
 export const GET = authedRoute(
   async ({ req, user }) => {
-    const { category, limit, scope, q, free } = readQuery(req, feedQuerySchema);
-    return getFeed(user.id, { categoryId: category, limit, scope, q, freeOnly: free === "1" });
+    const { category, limit, scope, q } = readQuery(req, feedQuerySchema);
+    return getFeed(user.id, { categoryId: category, limit, scope, q });
   },
   { rateLimit: { name: "feed", limit: 120, windowSec: 60 } },
 );

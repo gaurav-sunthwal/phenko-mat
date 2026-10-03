@@ -109,8 +109,8 @@ export const items = pgTable(
     description: varchar("description", { length: 1000 }).notNull().default(""),
     photos: text("photos").array().notNull(),
     condition: itemCondition("condition").notNull(),
-    /** Whole rupees; 0 means free. */
-    priceInr: integer("price_inr").notNull().default(0),
+    /** Whole rupees, at least ₹1 (there are no free listings). */
+    priceInr: integer("price_inr").notNull(),
     area: varchar("area", { length: 80 }).notNull(),
     lat: doublePrecision("lat").notNull(),
     lng: doublePrecision("lng").notNull(),
@@ -127,7 +127,8 @@ export const items = pgTable(
     index("items_active_location_idx").using("gist", t.location).where(sql`${t.status} = 'active'`),
     index("items_owner_created_idx").on(t.ownerId, t.createdAt.desc()),
     index("items_given_to_idx").on(t.givenToId).where(sql`${t.givenToId} is not null`),
-    check("items_price_range", sql`${t.priceInr} between 0 and 10000000`),
+    // No free listings: from ₹1.
+    check("items_price_range", sql`${t.priceInr} between 1 and 10000000`),
     check("items_photos_count", sql`cardinality(${t.photos}) between 1 and 6`),
     check("items_lat_range", sql`${t.lat} between -90 and 90`),
     check("items_lng_range", sql`${t.lng} between -180 and 180`),

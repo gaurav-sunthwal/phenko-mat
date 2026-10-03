@@ -33,7 +33,7 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
 
   // The draft lives in a store, so leaving the page (or opening "New category") keeps it.
   const draft = store();
-  const { photos, title, description, categoryIds, condition, free, price, location } = draft;
+  const { photos, title, description, categoryIds, condition, price, location } = draft;
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [phase, setPhase] = useState<"idle" | "uploading" | "publishing">("idle");
@@ -45,7 +45,6 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
   const setTitle = (title: string) => draft.set({ title });
   const setDescription = (description: string) => draft.set({ description });
   const setCondition = (condition: (typeof CONDITIONS)[number]) => draft.set({ condition });
-  const setFree = (free: boolean) => draft.set({ free });
   const setPrice = (price: string) => draft.set({ price });
   const toggleCategory = draft.toggleCategory;
   const profilePlace = me?.location && me.area ? { ...me.location, area: me.area } : null;
@@ -80,12 +79,12 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
       description,
       categoryIds,
       condition,
-      priceInr: free ? 0 : Number(price),
+      priceInr: Number(price),
       location: location ?? undefined,
     });
     if (!photos.length) return setError("Add at least one photo.");
     if (!fields.success) return setError(fields.error.issues[0].message);
-    if (!free && !(Number(price) > 0)) return setError("Enter a price, or mark it as free.");
+    if (!(Number(price) >= 1)) return setError("Enter a price — ₹1 is fine.");
 
     setError(null);
     setPhase("uploading");
@@ -266,38 +265,19 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
           </section>
 
           <section>
-            <h2 className="mb-3 font-extrabold">Price</h2>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setFree(true)}
-                aria-pressed={free}
-                className={`flex-1 rounded-2xl border-2 py-3 font-bold ${free ? "border-ink bg-honey" : "border-line bg-white"}`}
-              >
-                Give it free 💛
-              </button>
-              <button
-                type="button"
-                onClick={() => setFree(false)}
-                aria-pressed={!free}
-                className={`flex-1 rounded-2xl border-2 py-3 font-bold ${!free ? "border-ink bg-honey" : "border-line bg-white"}`}
-              >
-                Set a price
-              </button>
-            </div>
-            {!free && (
-              <label className="mt-3 flex items-center rounded-2xl border-2 border-line bg-white px-4 focus-within:border-honey">
-                <span className="font-bold text-ink-soft">₹</span>
-                <input
-                  inputMode="numeric"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="500"
-                  aria-label="Price in rupees"
-                  className="w-full bg-transparent px-2 py-3 outline-none"
-                />
-              </label>
-            )}
+            <h2 className="mb-1 font-extrabold">Price</h2>
+            <p className="mb-3 text-sm text-ink-soft">Anything from ₹1. Paid to you directly at pickup.</p>
+            <label className="flex items-center rounded-2xl border-2 border-line bg-white px-4 focus-within:border-honey">
+              <span className="font-bold text-ink-soft">₹</span>
+              <input
+                inputMode="numeric"
+                value={price}
+                onChange={(e) => setPrice(e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, 8))}
+                placeholder="1"
+                aria-label="Price in rupees"
+                className="w-full bg-transparent px-2 py-3 outline-none"
+              />
+            </label>
           </section>
 
           <ListingLocationPicker

@@ -15,7 +15,7 @@ export function GET() {
     `> ${SEO.definition}`,
     "",
     `- Website: ${absoluteUrl("/")}`,
-    `- Price: free to use. Most items are free; some owners set a small price, paid directly at pickup. ${SITE.name} never handles payments.`,
+    `- Price: owners set a price for each item, from ₹1, paid directly at pickup. ${SITE.name} never handles payments and costs nothing to use.`,
     `- Categories: ${DEFAULT_CATEGORIES.map((c) => c.name).join(", ")}.`,
     `- Privacy: only an area name and rounded distance are shown, never an exact location.`,
     `- Contact: ${SITE.supportEmail}`,

@@ -57,7 +57,7 @@ function MatchOverlay({ match }: { match: PendingMatch }) {
           It&apos;s a connection!
         </h2>
         <p className="mt-3 text-lg">
-          {match.other.name.split(" ")[0]} is giving away <strong>{match.item.title}</strong>. Say hi and plan the
+          {match.other.name.split(" ")[0]} is passing on <strong>{match.item.title}</strong>. Say hi and plan the
           pickup.
         </p>
 

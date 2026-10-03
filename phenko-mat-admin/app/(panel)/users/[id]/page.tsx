@@ -18,7 +18,7 @@ export default async function UserDetailPage({ params }: PageProps<"/users/[id]"
 
   const stats = [
     ["Listed", user.listed],
-    ["Given away", user.given],
+    ["Passed on", user.given],
     ["Received", user.got],
     ["Chats", user.connections],
     ["Messages sent", user.messages],

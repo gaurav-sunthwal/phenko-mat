@@ -21,12 +21,12 @@ interface ListingDraft {
   description: string;
   categoryIds: string[];
   condition: Condition;
-  free: boolean;
+  /** Whole rupees as typed; at least ₹1 (there are no free listings). */
   price: string;
   /** Pickup spot chosen for this listing; null = the owner's profile location (new listings only). */
   location: ListingPlace | null;
 
-  set: (patch: Partial<Pick<ListingDraft, "title" | "description" | "condition" | "free" | "price" | "location">>) => void;
+  set: (patch: Partial<Pick<ListingDraft, "title" | "description" | "condition" | "price" | "location">>) => void;
   addPhotos: (photos: PickedImage[]) => void;
   removePhoto: (localUri: string) => void;
   markUploaded: (localUri: string, url: string) => void;
@@ -44,7 +44,6 @@ const initial = {
   description: "",
   categoryIds: [] as string[],
   condition: "good" as Condition,
-  free: true,
   price: "",
   location: null as ListingPlace | null,
 };
@@ -77,8 +76,7 @@ const createDraft = () => create<ListingDraft>()((set) => ({
       description: item.description,
       categoryIds: item.categoryIds,
       condition: item.condition,
-      free: item.priceInr === 0,
-      price: item.priceInr === 0 ? "" : String(item.priceInr),
+      price: String(item.priceInr),
       location: item.location ? { ...item.location, area: item.area } : null,
     }),
   reset: () => set(initial),

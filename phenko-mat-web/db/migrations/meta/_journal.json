@@ -64,6 +64,13 @@
       "when": 1790841551826,
       "tag": "0008_telemetry",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791038967468,
+      "tag": "0009_no_free_listings",
+      "breakpoints": true
     }
   ]
 }

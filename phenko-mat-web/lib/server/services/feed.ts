@@ -69,7 +69,7 @@ export type FeedScope = "nearby" | "all";
  */
 export async function getFeed(
   userId: string,
-  opts: { categoryId?: string; limit: number; scope: FeedScope; q?: string; freeOnly?: boolean },
+  opts: { categoryId?: string; limit: number; scope: FeedScope; q?: string },
 ): Promise<FeedItem[]> {
   const db = getDb();
   const nearby = opts.scope === "nearby";
@@ -119,7 +119,6 @@ export async function getFeed(
         and not exists (select 1 from swipes s where s.user_id = ${userId} and s.item_id = i.id ${swipedFilter})
         and ${notBlocked(userId, sql`i.owner_id`)}
         and ${notSuspended(sql`i.owner_id`)}
-        ${opts.freeOnly ? sql`and i.price_inr = 0` : sql``}
         ${nearby ? sql`and me.location is not null and ST_DWithin(i.location, me.location, me.radius_km * 1000)` : sql``}
         ${categoryFilter}
         ${searchFilter}

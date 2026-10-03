@@ -95,12 +95,12 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
       description: draft.description,
       categoryIds: draft.categoryIds,
       condition: draft.condition,
-      priceInr: draft.free ? 0 : Number(draft.price),
+      priceInr: Number(draft.price),
       location: draft.location ?? undefined,
     });
     if (!draft.photos.length) return setError("Add at least one photo.");
     if (!fields.success) return setError(fields.error.issues[0].message);
-    if (!draft.free && !(Number(draft.price) > 0)) return setError("Enter a price, or mark it as free.");
+    if (!(Number(draft.price) >= 1)) return setError("Enter a price — ₹1 is fine.");
 
     setError(null);
     setPhotoError(null);
@@ -262,42 +262,23 @@ function ListingForm({ store, editing }: { store: ListingDraftStore; editing?: F
         </View>
 
         <View>
-          <Text weight="extrabold" style={styles.mb3}>
-            Price
+          <Text weight="extrabold">Price</Text>
+          <Text size="sm" color={colors.inkSoft} style={styles.mb3}>
+            Anything from ₹1. Paid to you directly at pickup.
           </Text>
-          <View style={styles.priceRow}>
-            {([true, false] as const).map((free) => {
-              const on = draft.free === free;
-              return (
-                <Pressable
-                  key={String(free)}
-                  onPress={() => draft.set({ free })}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on }}
-                  style={[styles.priceOption, { borderColor: on ? colors.ink : colors.line, backgroundColor: on ? colors.honey : colors.white }]}
-                >
-                  <Text weight="bold">{free ? "Give it free 💛" : "Set a price"}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          {!draft.free ? (
-            <View style={styles.mt3}>
-              <TextField
-                prefix={
-                  <Text weight="bold" color={colors.inkSoft}>
-                    ₹
-                  </Text>
-                }
-                value={draft.price}
-                onChangeText={(v) => draft.set({ price: v.replace(/\D/g, "").slice(0, 8) })}
-                keyboardType="number-pad"
-                placeholder="500"
-                accessibilityLabel="Price in rupees"
-                style={styles.priceInput}
-              />
-            </View>
-          ) : null}
+          <TextField
+            prefix={
+              <Text weight="bold" color={colors.inkSoft}>
+                ₹
+              </Text>
+            }
+            value={draft.price}
+            onChangeText={(v) => draft.set({ price: v.replace(/\D/g, "").replace(/^0+/, "").slice(0, 8) })}
+            keyboardType="number-pad"
+            placeholder="1"
+            accessibilityLabel="Price in rupees"
+            style={styles.priceInput}
+          />
         </View>
 
         <View style={styles.areaNote}>
@@ -377,8 +358,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  priceRow: { flexDirection: "row", gap: 8 },
-  priceOption: { flex: 1, borderWidth: 2, borderRadius: radius.lg, paddingVertical: 12, alignItems: "center" },
   priceInput: { paddingHorizontal: 8 },
   areaNote: {
     flexDirection: "row",

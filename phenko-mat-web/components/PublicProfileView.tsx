@@ -70,7 +70,7 @@ export function PublicProfileView({ id }: { id: string }) {
         <dl className="mt-5 grid grid-cols-2 gap-2 text-center">
           {(
             [
-              ["Given away", profile.stats.given],
+              ["Passed on", profile.stats.given],
               ["Received", profile.stats.got],
             ] as const
           ).map(([label, value]) => (

@@ -46,7 +46,8 @@ export const itemCreateSchema = z.object({
     .max(5, "Pick up to 5 categories.")
     .transform((ids) => [...new Set(ids)]),
   condition: conditionSchema,
-  priceInr: z.number().int().min(0).max(10_000_000),
+  // No free listings: anything from ₹1.
+  priceInr: z.number().int().min(1, "Price must be at least ₹1.").max(10_000_000),
   /** Where the item is picked up. Omitted: the owner's profile location. Others only ever see the area. */
   location: locationSchema.optional(),
 });
@@ -130,8 +131,6 @@ export const feedQuerySchema = z.object({
   scope: z.enum(["nearby", "all"]).default("nearby"),
   /** Free-text search over title, description and category names (typo tolerant). */
   q: text(1, 80, "Search").optional(),
-  /** "1": only items being given away for free. */
-  free: z.enum(["1"]).optional(),
   limit: z.coerce.number().int().min(1).max(30).default(20),
 });
 

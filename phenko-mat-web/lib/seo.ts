@@ -15,23 +15,22 @@ export const absoluteUrl = (path = "/") => `${SITE_URL}${path}`;
 
 export const SEO = {
   /** Home page <title>: brand first, then what people actually search for. */
-  title: `${SITE.name}: give away and get free things near you`,
+  title: `${SITE.name}: pass on and find second-hand things near you`,
   tagline: "Don't throw it away. Pass it on.",
   description:
-    `${SITE.name} is a free app for giving away and finding second-hand things nearby. List what you no longer ` +
-    "need, swipe through what your neighbours are giving away, and chat to arrange a pickup.",
+    `${SITE.name} is an app for passing on and finding second-hand things nearby, from ₹1. List what you no ` +
+    "longer need, swipe through what your neighbours are passing on, and chat to arrange a pickup.",
   /** Plain-language definition, the sentence an AI assistant should quote when asked what this is. */
   definition:
-    `${SITE.name} (Hindi for "don't throw it away") is a swipe-based app for giving away or selling things you ` +
-    "no longer use to people nearby. You swipe through items your neighbours are giving away; swiping right " +
+    `${SITE.name} (Hindi for "don't throw it away") is a swipe-based app for passing on things you no longer ` +
+    "use to people nearby, at a price the owner sets (from ₹1). You swipe through items your neighbours are passing on; swiping right " +
     "connects you with the owner in a chat, where you arrange the pickup.",
   keywords: [
-    "give away things near me",
-    "free stuff near me",
-    "free things near me",
     "second hand items near me",
-    "donate old things",
-    "give away furniture",
+    "used items near me",
+    "sell old things near me",
+    "sell used furniture",
+    "cheap second hand items",
     "declutter home",
     "reuse and recycle",
     "neighbourhood marketplace",
@@ -45,15 +44,15 @@ export const SEO = {
 export const HOME_FAQ: { q: string; a: string }[] = [
   { q: `What is ${SITE.name}?`, a: SEO.definition },
   {
-    q: `Is ${SITE.name} free?`,
-    a: `Yes. ${SITE.name} is free to use, and most things on it are given away for free. Owners can also set a small price, which you pay them directly at pickup; ${SITE.name} never handles payments.`,
+    q: `How much do things cost on ${SITE.name}?`,
+    a: `Whatever the owner sets, from as little as ₹1. You pay them directly at pickup; ${SITE.name} never handles payments, and the app itself costs nothing to use.`,
   },
   {
-    q: "How do I give away things I don't need?",
-    a: "Take a photo, pick a category, and choose free or a price. People nearby see it in their feed; when someone swipes right, a chat opens so you can agree on a pickup time.",
+    q: "How do I pass on things I don't need?",
+    a: "Take a photo, pick a category, and set a price (₹1 is fine). People nearby see it in their feed; when someone swipes right, a chat opens so you can agree on a pickup time.",
   },
   {
-    q: "How do I find free things near me?",
+    q: "How do I find second-hand things near me?",
     a: `Open ${SITE.name} and swipe through items listed by people around you, sorted by distance. Swipe right on anything you'd like and chat with the owner to collect it.`,
   },
   {
@@ -61,7 +60,7 @@ export const HOME_FAQ: { q: string; a: string }[] = [
     a: "Only your area name and a rounded distance are shown, never your exact location. Every account is verified by email, Google or Apple, and you can report or block anyone. Meet somewhere public and check items before paying.",
   },
   {
-    q: "What can I give away?",
+    q: "What can I list?",
     a: "Furniture, electronics, books, clothes, kitchenware, toys and most everyday household things. Weapons, medicines, alcohol, animals and anything illegal are not allowed.",
   },
 ];

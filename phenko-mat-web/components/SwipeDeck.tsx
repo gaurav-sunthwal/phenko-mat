@@ -33,9 +33,7 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
   const setChosenScope = useUi((s) => s.setFeedScope);
   const scope: FeedScope | null = chosenScope ?? (me ? (me.location ? "nearby" : "all") : null);
 
-  const freeOnly = useUi((s) => s.freeOnly);
-  const setFreeOnly = useUi((s) => s.setFreeOnly);
-  const { data, error, isLoading, mutate } = useFeed(categoryId, scope, query, freeOnly);
+  const { data, error, isLoading, mutate } = useFeed(categoryId, scope, query);
   const { data: categoryList } = useCategories();
   const { mutate: globalMutate } = useSWRConfig();
   const swiped = useUi((s) => s.swiped);
@@ -69,7 +67,6 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
     if (top || scope !== "all" || query || !data) return null;
     const qs = new URLSearchParams();
     if (categoryId) qs.set("category", categoryId);
-    if (freeOnly) qs.set("free", "1");
     return `/api/swipes${qs.size ? `?${qs}` : ""}`;
   })();
   const { data: summary, mutate: refreshSummary } = useSWR<SwipeSummary>(summaryKey, fetcher, {
@@ -279,7 +276,6 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
       ) : (
         <ExhaustedDeck
           summary={summary}
-          freeOnly={freeOnly}
           inCategory={Boolean(categoryId)}
           resetting={resetting}
           onReset={resetPasses}
@@ -399,16 +395,6 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
               ))}
             </div>
           </div>
-          <button
-            onClick={() => setFreeOnly(!freeOnly)}
-            aria-pressed={freeOnly}
-            title="Only show things being given away for free"
-            className={`shrink-0 rounded-full border-2 px-3.5 py-2 text-sm font-bold shadow-sm transition ${
-              freeOnly ? "border-ink bg-honey text-ink" : "border-transparent bg-white text-ink-soft hover:text-ink"
-            }`}
-          >
-            Free only
-          </button>
         </div>
         {me && !me.location && (
           <button
@@ -459,14 +445,12 @@ function DeckSkeleton() {
 /** "Everywhere" has nothing left: say why, and only offer what will actually bring cards back. */
 function ExhaustedDeck({
   summary,
-  freeOnly,
   inCategory,
   resetting,
   onReset,
   error,
 }: {
   summary: SwipeSummary | undefined;
-  freeOnly: boolean;
   inCategory: boolean;
   resetting: boolean;
   onReset: () => void;
@@ -507,7 +491,7 @@ function ExhaustedDeck({
       <EmptyState
         emoji="💛"
         title="You've said yes to everything"
-        body={`You swiped right on every ${freeOnly ? "free " : ""}listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
+        body={`You swiped right on every listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
         action={
           <Link href="/chats" className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-bold text-white">
             Go to your chats
@@ -521,11 +505,7 @@ function ExhaustedDeck({
     <EmptyState
       emoji="🐝"
       title="You've seen it all"
-      body={
-        freeOnly
-          ? "Nothing free to swipe on right now. Turn off “Free only” to see everything, or check back soon."
-          : "There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
-      }
+      body="There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
       action={errorNote || undefined}
     />
   );

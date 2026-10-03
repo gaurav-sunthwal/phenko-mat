@@ -52,9 +52,7 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
   const setChosenScope = useUi((s) => s.setFeedScope);
   const scope: FeedScope | null = chosenScope ?? (me ? (me.location ? "nearby" : "all") : null);
 
-  const freeOnly = useUi((s) => s.freeOnly);
-  const setFreeOnly = useUi((s) => s.setFreeOnly);
-  const { data, error, isLoading, refetch } = useFeed(categoryId, scope, query, freeOnly);
+  const { data, error, isLoading, refetch } = useFeed(categoryId, scope, query);
   const categories = useCategoryMap();
   const { swipe, resetPasses, undoPass } = useSwipeActions();
   const swiped = useUi((s) => s.swiped);
@@ -79,7 +77,7 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
   }, [data, restored, swiped]);
   const top = deck[0];
   // Only when "Everywhere" runs dry: why it's empty, so we never offer "show passed items" with none to show.
-  const { data: summary } = useSwipeSummary(categoryId, freeOnly, !top && scope === "all" && !query && Boolean(data));
+  const { data: summary } = useSwipeSummary(categoryId, !top && scope === "all" && !query && Boolean(data));
 
   // The top card counts as a view for the owner's analytics.
   const topId = top?.id;
@@ -260,7 +258,6 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
       ) : (
         <ExhaustedDeck
           summary={summary}
-          freeOnly={freeOnly}
           inCategory={Boolean(categoryId)}
           resetting={resetting}
           onReset={showPassedAgain}
@@ -331,21 +328,6 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
           <View style={styles.scopeWrap}>
             <View style={styles.scopeRow}>
               <SegmentedControl options={SCOPES} value={scope} onChange={pickScope} shadow style={styles.flex1} />
-              <Pressable
-                onPress={() => {
-                  void Haptics.selectionAsync();
-                  setFreeOnly(!freeOnly);
-                }}
-                style={[styles.freeToggle, freeOnly && styles.freeToggleOn]}
-                accessibilityRole="switch"
-                accessibilityState={{ checked: freeOnly }}
-                accessibilityLabel="Free only"
-                accessibilityHint="Only show things being given away for free"
-              >
-                <Text weight="bold" size="sm" color={freeOnly ? colors.ink : colors.inkSoft}>
-                  Free only
-                </Text>
-              </Pressable>
             </View>
             {me && !me.location ? (
               <Pressable onPress={openLocation} style={styles.locationNudge} accessibilityRole="button">
@@ -366,13 +348,11 @@ export function SwipeDeck({ categoryId, query }: { categoryId?: string; query?: 
 /** "Everywhere" has nothing left: say why, and only offer what will actually bring cards back. */
 function ExhaustedDeck({
   summary,
-  freeOnly,
   inCategory,
   resetting,
   onReset,
 }: {
   summary: SwipeSummary | undefined;
-  freeOnly: boolean;
   inCategory: boolean;
   resetting: boolean;
   onReset: () => void;
@@ -403,7 +383,7 @@ function ExhaustedDeck({
       <EmptyState
         emoji="💛"
         title="You've said yes to everything"
-        body={`You swiped right on every ${freeOnly ? "free " : ""}listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
+        body={`You swiped right on every listing ${where} — they're waiting in your chats. New things show up here as neighbours post them.`}
         action={<Button label="Go to your chats" onPress={() => router.navigate("/chats")} />}
       />
     );
@@ -413,11 +393,7 @@ function ExhaustedDeck({
     <EmptyState
       emoji="🐝"
       title="You've seen it all"
-      body={
-        freeOnly
-          ? "Nothing free to swipe on right now. Turn off “Free only” to see everything, or check back soon."
-          : "There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
-      }
+      body="There's nothing new to swipe on right now. Check back soon — neighbours post new things every day."
     />
   );
 }
@@ -427,16 +403,6 @@ const styles = StyleSheet.create({
   scopeWrap: { paddingHorizontal: 16, paddingBottom: 12 },
   scopeRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   flex1: { flex: 1 },
-  freeToggle: {
-    borderRadius: radius.full,
-    borderWidth: 2,
-    borderColor: "transparent",
-    backgroundColor: colors.white,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    ...shadows.sm,
-  },
-  freeToggleOn: { borderColor: colors.ink, backgroundColor: colors.honey },
   locationNudge: {
     marginTop: 8,
     flexDirection: "row",

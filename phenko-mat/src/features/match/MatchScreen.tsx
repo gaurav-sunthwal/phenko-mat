@@ -49,7 +49,7 @@ export function MatchScreen() {
           It&apos;s a connection!
         </Text>
         <Text size="lg" align="center" style={styles.mt3}>
-          {match.other.name.split(" ")[0]} is giving away{" "}
+          {match.other.name.split(" ")[0]} is passing on{" "}
           <Text size="lg" weight="bold">
             {match.item.title}
           </Text>

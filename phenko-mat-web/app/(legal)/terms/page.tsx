@@ -6,7 +6,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   path: "/terms",
   title: "Terms of service",
-  description: `The terms for using ${SITE.name} to give away, find and sell second-hand things nearby.`,
+  description: `The terms for using ${SITE.name} to pass on, find and sell second-hand things nearby.`,
 });
 
 // Draft for v1. Have it reviewed by a lawyer before launch.
@@ -21,7 +21,7 @@ export default function TermsPage() {
       </p>
       <h2>1. What we do</h2>
       <p>
-        {SITE.name} helps people give away or sell things to others nearby. We only connect people. We are not a party to
+        {SITE.name} helps people sell things they no longer need to others nearby. We only connect people. We are not a party to
         any exchange, don&apos;t own or inspect items, and don&apos;t handle payments.
       </p>
       <h2>2. Your account</h2>

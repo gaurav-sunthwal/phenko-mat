@@ -15,10 +15,10 @@ export const qk = {
   blocks: ["blocks"] as const,
   feed: {
     all: ["feed"] as const,
-    deck: (scope: FeedScope, categoryId: string | undefined, q?: string, freeOnly = false) =>
-      ["feed", scope, categoryId ?? null, q ?? null, freeOnly] as const,
+    deck: (scope: FeedScope, categoryId: string | undefined, q?: string) =>
+      ["feed", scope, categoryId ?? null, q ?? null] as const,
     /** Why a deck is empty (passed vs. wanted). Under `feed` so resetting passes refreshes it too. */
-    summary: (categoryId: string | undefined, freeOnly: boolean) => ["feed", "summary", categoryId ?? null, freeOnly] as const,
+    summary: (categoryId: string | undefined) => ["feed", "summary", categoryId ?? null] as const,
   },
   connections: {
     all: ["connections"] as const,
